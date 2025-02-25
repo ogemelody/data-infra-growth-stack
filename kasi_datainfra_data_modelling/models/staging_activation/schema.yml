@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: mixpanel
+    database: kasi-production
+    dataset: mixpanel_existing_data  # Ensure this matches your dataset
+    tables:
+      - name: signups
