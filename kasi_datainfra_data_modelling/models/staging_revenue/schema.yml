@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: deposit  # Model name
+    description: "Events for account deposits including details like amount, customer ID, and customer name."
+    columns:
+      - name: event_name
+        description: "Name of the event."
+        tests:
+          - not_null  # Ensure the event_name is not null
+
+      - name: time
+        description: "Timestamp of the event."
+        tests:
+          - not_null  # Ensure time is always present
+
+      - name: amount
+        description: "Amount involved in the account deposit."
+        tests:
+          - not_null  # Ensure amount is not null
+          - numeric  # Ensure the amount is numeric
+
+      - name: customer_id
+        description: "Unique identifier for the customer."
+
+
+      - name: customer_name
+        description: "Name of the customer involved in the event."
+
