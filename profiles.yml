@@ -5,6 +5,6 @@ kasi_datinfra_growthstack:
       type: bigquery
       method: oauth
       project: kasi-production  # Replace with your actual GCP project ID
-      dataset: staging_activation   # Replace with your BigQuery dataset
+      dataset: kasi_datainfra_all_tables # Replace with your BigQuery dataset
       location: us-central1         # Specify your region
       threads: 4                    # Number of threads to use for queries

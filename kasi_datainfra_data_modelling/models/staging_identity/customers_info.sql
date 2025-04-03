@@ -1,11 +1,14 @@
+
 {{ config(
-    materialized='view'
+    materialized='table'
 ) }}
+
 
 WITH customers AS (
     SELECT
         bank_account.date_issued,
         created_at.date_time AS created_at_datetime,
+        u_id,
         title,
         first_name,
         last_name,
@@ -28,6 +31,12 @@ WITH customers AS (
         bank_account.card_holder_id,
         account_status,
         account_type.type AS account_type,
+        CASE
+        WHEN billing.account_type = 'Professional' THEN 'Subscriber'
+        ELSE billing.account_type
+    END AS billing_account_type,
+        billing.billing_update.previous_account_type AS billing_previous_account_type,
+        billing.billing_update.updated_on AS billing_updated_on,
         account_status_updates.last_change,
         account_status_updates.latest_update_date,
         account_status_updates.updated_by,
@@ -144,11 +153,13 @@ final_data AS (
         ROW_NUMBER() OVER (PARTITION BY c.full_name_source_customer_collection ORDER BY c.created_at_datetime DESC) AS row_num
     FROM customers c
     LEFT JOIN cards ca
-        ON c.full_name_source_customer_collection = ca.linked_to_customer_name
+        ON LOWER(c.full_name_source_customer_collection) = LOWER(ca.linked_to_customer_name)
     LEFT JOIN mixpanel_deduplicated m
-        ON COALESCE(c.full_name_source_customer_collection, ca.linked_to_customer_name) = m.customer_name_source_mixpanel
+        ON LOWER(COALESCE(c.full_name_source_customer_collection, ca.linked_to_customer_name)) = LOWER(m.customer_name_source_mixpanel)
 )
 
-SELECT *
+SELECT
+    COALESCE(final_data.linked_to_customer_id, final_data.customer_id_source_mixpanel) AS customer_id,
+    final_data.*
 FROM final_data
-WHERE row_num = 1; -- Ensures only one row per full_name_source_customer_collection
+WHERE final_data.row_num = 1 -- Ensures only one row per full_name_source_customer_collection

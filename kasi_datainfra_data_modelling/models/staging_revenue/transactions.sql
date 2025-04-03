@@ -1,9 +1,17 @@
+{{ config(
+    materialized='table'
+) }}
+
+
 SELECT
     COALESCE(t.date, ut.date) AS date,
+    ci.created_at_datetime AS download_date,
+    ci.date_issued AS account_issued_date,
+    MIN(t.date) OVER (PARTITION BY t.sender_id) AS first_deposit_date,
     t.sender_first_name,
     t.sender_last_name,
     t.sender_email,
-    t.sender_user_name,
+    t.sender_user_name, ci.status_from_cards,
     COALESCE(t.sender_id, ut.sender_id) AS sender_id,
     t.sender_phone_number,
     COALESCE(
@@ -13,6 +21,10 @@ SELECT
 ) AS sender_amount,
 
     t.sender_name,
+    DATE_DIFF( ci.date_issued, ci.created_at_datetime, DAY) AS Download_to_Account_Issued_in_days,
+    DATE_DIFF(MIN(t.date) OVER (PARTITION BY t.sender_id), ci.date_issued, DAY) AS Account_Issued_to_1st_Deposit_in_days,
+    DATE_DIFF(MIN(t.date) OVER (PARTITION BY t.sender_id), ci.created_at_datetime, DAY) AS Download_to_1st_Deposit_in_days,
+
     t.sender_reference,
     COALESCE(
         SAFE_CAST(t.fees.integer AS FLOAT64),
@@ -88,10 +100,81 @@ SELECT
     t.franc_transaction_id,
     t.transaction_redeemed,
     COALESCE(CAST(t.running_account_balance_before_payment.integer AS FLOAT64), t.running_account_balance_before_payment.float ) as running_account_balance_before_payment,
-    COALESCE(CAST(t.running_account_balance_after_payment.integer AS FLOAT64), t.running_account_balance_after_payment.float) as running_account_balance_after_payment
+    COALESCE(CAST(t.running_account_balance_after_payment.integer AS FLOAT64), t.running_account_balance_after_payment.float) as running_account_balance_after_payment,
+    ci.billing_account_type,
+    CASE
+        WHEN t.transaction_type = 'flexpay'
+             AND (COALESCE(SAFE_CAST(t.credit.integer AS FLOAT64), t.credit.float) != 0)
+        THEN 'Deposit'
+        WHEN t.transaction_type = 'flexpay'
+             AND (COALESCE(SAFE_CAST(t.debit.integer AS FLOAT64), t.debit.float) != 0)
+        THEN 'Card Transactions Volume'
+
+        WHEN t.transaction_type = 'invoice' THEN 'Deposit Volume'
+        WHEN t.transaction_type = 'advance_payback' THEN 'Lending Repayment'
+        WHEN t.transaction_type = 'advance_transfer' THEN 'Lending Volume'
+        WHEN t.transaction_type = 'credit_transfer' THEN 'Lending Volume'
+        WHEN t.transaction_type = 'salary' THEN 'Deposit'
+        WHEN t.transaction_type = 'advance_issued' THEN 'Total Credit Limit'
+        WHEN t.transaction_type = 'credit_payment' THEN 'Lending Revenue'
+        WHEN t.transaction_type = 'card_replacement_at_branch' THEN 'Once-off Revenue'
+        WHEN t.transaction_type = 'monthly_account_fee' THEN 'Subscription Revenue'
+        WHEN t.transaction_type = 'account_deposit' THEN 'Deposit'
+        WHEN t.transaction_type = 'one_voucher_redeem' THEN 'Deposit'
+         WHEN t.transaction_type = 'bank_eft' AND ci.billing_account_type is null THEN 'Transfers'
+        WHEN t.transaction_type = 'bank_eft' AND ci.billing_account_type = 'PROFESSIONAL' THEN 'Transfers'
+         WHEN t.transaction_type = 'bank_eft' AND ci.billing_account_type = 'FREE' THEN 'Transfers'
+        WHEN t.transaction_type = 'bank_eft' AND ci.billing_account_type = 'BASIC'  THEN 'Transfers Revenue'
+        WHEN t.transaction_type = 'absa_atm_deposit' THEN 'Deposit'
+        WHEN t.transaction_type = 'kasi_to_kasi' THEN 'No Revenue (Transfers)'
+        WHEN t.transaction_type = 'airtime_purchase' THEN 'VAS'
+        WHEN t.transaction_type = 'pargo_card_order' THEN 'Other'
+        WHEN t.transaction_type = 'one_voucher_purchase' THEN 'VAS'
+        WHEN t.transaction_type = 'card_order_fee' THEN 'Once-off Revenue'
+        WHEN t.transaction_type = 'electricity_purchase' THEN 'VAS'
+        WHEN t.transaction_type = 'water_meter_purchase' THEN 'VAS'
+        WHEN t.transaction_type = 'takealot' THEN 'VAS'
+        WHEN t.transaction_type = 'card_replacement_with_pargo' THEN 'Once-off Revenue'
+        WHEN t.transaction_type = 'card_replacement' THEN 'Once-off Revenue'
+        WHEN t.transaction_type = 'card_replacement_fee' THEN 'Once-off Revenue'
+        WHEN t.transaction_type = 'cash_express' THEN 'Volume Based Revenue'
+        WHEN t.transaction_type = 'savings_deposit' THEN 'Investment'
+        WHEN t.transaction_type = 'savings_cashout' THEN 'Investment Withdrawal'
+        WHEN t.transaction_type = 'vault_deposit' THEN 'Investment'
+        WHEN t.transaction_type = 'savings_auto_deposit' THEN 'Investment'
+        WHEN t.transaction_type = 'vault_cashout' THEN 'Investment Withdrawal'
+        ELSE 'Unknown'
+    END AS transaction_category,
+    CASE
+        WHEN t.transaction_type = 'bank_eft' AND ci.billing_account_type = 'BASIC' THEN 8.50
+        WHEN t.transaction_type = 'bank_eft' AND ci.billing_account_type = 'FREE' THEN 0.00
+        WHEN t.transaction_type = 'bank_eft' AND ci.billing_account_type = 'PROFESSIONAL' THEN 0.00
+        ELSE 0.00
+    END AS revenue_bank_eft,
+    CASE
+    -- For categories with volume-based revenue, subscription revenue, once-off revenue, and lending revenue
+    WHEN t.transaction_type IN ("cash_express", "monthly_account_fee", "card_order_fee", "card_replacement_with_pargo", "card_replacement", "card_replacement-fee", "card_replacement_at_branch", "credit_payment")
+    THEN COALESCE(SAFE_CAST(t.debit.integer AS FLOAT64), t.debit.float)
+
+    -- For bank EFT transactions with a BASIC plan, assign a fixed value of 8.50
+    WHEN t.transaction_type = 'bank_eft' AND ci.billing_account_type = 'BASIC' THEN 8.50
+    -- Default case for other transactions
+    ELSE 0
+  END AS mrr_amount,
+  CASE
+  WHEN t.transaction_type IN ("airtime_purchase", "one_voucher_purchase", "electricity_purchase", "water_meter_purchase", "takealot")
+  THEN COALESCE(SAFE_CAST(t.debit.integer AS FLOAT64), t.debit.float) * 0.025
+
+  WHEN t.transaction_type = "one_voucher_redeem"
+  THEN COALESCE(SAFE_CAST(t.credit.integer AS FLOAT64), t.credit.float) * 0.05
+
+  ELSE 0  -- Ensure all cases are covered
+END AS VAS_revenue
 
  FROM    `kasi-production.kasi_datainfra_firestore_export_from_gcs.transactions` AS t
 FULL OUTER JOIN
     `kasi-production.kasi_datainfra_firestore_export_from_gcs.uncleared_transactions` AS ut
 ON
     t.transaction_id = ut.transaction_id
+LEFT JOIN `kasi-production.kasi_datainfra_all_tables.customers_info` AS ci
+ON LOWER(t.sender_name) = LOWER(ci.full_name_source_customer_collection)
