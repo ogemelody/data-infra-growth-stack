@@ -1,0 +1,52 @@
+version: 2
+
+sources:
+  - name: kasi_datainfra_firestore_export_from_gcs_for cards_collection
+    tables:
+      - name: cards
+  - name: mixpanel_existing_data_activation
+    description: |
+      The source table contains user events data, including the first app open event (`$ae_first_open`) and account deposit events (`account_deposit`).
+    tables:
+      - name: mp_master_event
+        description: |
+          The table contains event data from Mixpanel, including events related to the first app open and deposit events.
+        columns:
+          - name: distinct_id
+            description: Unique identifier for the user.
+          - name: event_name
+            description: Name of the event (e.g., `$ae_first_open`, `account_deposit`).
+          - name: time
+            description: Timestamp of the event.
+          - name: properties
+            description: JSON-encoded properties associated with the event (including deposit amount).
+
+models:
+  - name: user_first_deposit_duration
+    description: |
+      This model calculates the time it takes for a user to make their first deposit after the first app open event.
+      It includes the deposit time, the time to deposit in seconds, and the amount deposited.
+    columns:
+      - name: distinct_id
+        description: Unique identifier for the user.
+        tests:
+          - not_null
+      - name: first_open_time
+        description: The timestamp when the user first opened the app (`$ae_first_open` event).
+        tests:
+          - not_null
+      - name: deposit_time
+        description: The timestamp when the user made their first deposit (`account_deposit` event).
+        tests:
+          - not_null
+      - name: time_to_deposit_seconds
+        description: The time in seconds between the first app open and the first deposit event.
+        tests:
+          - not_null
+      - name: deposit_amount
+        description: The amount deposited during the first deposit event.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["positive"]
+              description: "Amount deposited should be positive."

@@ -1,0 +1,116 @@
+version: 2
+
+sources:
+  - name: kasi_datainfra_firestore_export_from_gcs
+    tables:
+      - name: customers
+      - name: cards
+
+  - name: mixpanel_existing_data_identity
+    tables:
+      - name: mp_master_event
+
+models:
+  - name: stg_customers
+    description: "Staging table for customer identity data."
+    columns:
+      - name: full_name_source_customer_collection
+        description: "Concatenation of first and last name."
+        tests:
+          - not_null
+
+      - name: email
+        description: "Customer's email address."
+        tests:
+          - unique
+
+      - name: gender
+        description: "Gender of the customer."
+        tests:
+          - accepted_values:
+              values: ['male', 'female', 'other']
+
+      - name: created_at_datetime
+        description: "Timestamp of customer account creation."
+
+      - name: account_status
+        description: "Current status of the customer's account."
+
+      - name: business_id
+        description: "ID of the first associated business."
+
+      - name: bank_account_available_balance_float_value
+        description: "Float representation of the customer's bank account balance."
+
+      - name: linked_to_customer_id
+        description: "Customer ID associated with linked card."
+
+      - name: date_of_birth_datetime
+        description: "Date of birth of the customer."
+
+      - name: phone_number
+        description: "Customer's primary phone number."
+
+      - name: account_type
+        description: "Type of bank account the customer holds."
+
+      - name: referral_code
+        description: "Referral code used during customer registration."
+
+      - name: approved_by
+        description: "User who approved the customer account."
+
+      - name: cash_advance_status
+        description: "Status of the customer's cash advance."
+
+      - name: subscription_payments.number_of_missed_subscription_payments
+        description: "Number of missed subscription payments by the customer."
+
+      - name: identity_citizenship_id_passport_number
+        description: "Customer's passport or ID number."
+
+      - name: pargo_card_order_pickup_point_city
+        description: "City where the Pargo card order will be picked up."
+
+      - name: deep_link_campaign
+        description: "Campaign associated with the deep link."
+
+      - name: deep_link_referral_code
+        description: "Referral code embedded in the deep link."
+
+      - name: declined_by
+        description: "User who declined the customer's account."
+
+      - name: verification_decline_reason
+        description: "Reason why the customer verification was declined."
+
+      - name: os
+        description: "Operating system used during registration."
+
+      - name: platform
+        description: "Platform the customer used (iOS, Android, Web)."
+
+      - name: mixpanel_customer_id_source_mixpanel
+        description: "Customer ID from Mixpanel."
+
+      - name: mixpanel_customer_name_source_mixpanel
+        description: "Customer name from Mixpanel."
+
+  - name: stg_cards
+    description: "Staging table for card information linked to customers."
+    columns:
+      - name: linked_to_customer_name
+        description: "Name of the customer linked to the card."
+
+
+      - name: linked_to_customer_id
+        description: "Customer ID associated with the card."
+
+
+      - name: date_linked
+        description: "Timestamp of when the card was linked to the customer."
+
+      - name: status_from_cards
+        description: "Status of the card (active, expired, etc.)."
+
+
