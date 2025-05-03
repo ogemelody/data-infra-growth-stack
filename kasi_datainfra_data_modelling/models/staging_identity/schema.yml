@@ -11,7 +11,7 @@ sources:
       - name: mp_master_event
 
 models:
-  - name: stg_customers
+  - name: customer_info
     description: "Staging table for customer identity data."
     columns:
       - name: full_name_source_customer_collection

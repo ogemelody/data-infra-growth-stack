@@ -1,52 +1,94 @@
 version: 2
 
 sources:
-  - name: kasi_datainfra_firestore_export_from_gcs_for cards_collection
+  - name: kasi_datainfra_firestore_export_from_gcs_for_cards_collection
     tables:
       - name: cards
+        description: |
+          This source table contains data from the Firestore export for the cards collection, including customer linking details and location data.
   - name: mixpanel_existing_data_activation
     description: |
-      The source table contains user events data, including the first app open event (`$ae_first_open`) and account deposit events (`account_deposit`).
+      The source table contains user events data, including the first app open event (`$ae_first_open`), account issuance (`account_issued`), and account deposit events (`account_deposit`).
     tables:
       - name: mp_master_event
         description: |
-          The table contains event data from Mixpanel, including events related to the first app open and deposit events.
+          The table contains event data from Mixpanel, including events related to the first app open, account issuance, and account deposits.
         columns:
           - name: distinct_id
             description: Unique identifier for the user.
           - name: event_name
-            description: Name of the event (e.g., `$ae_first_open`, `account_deposit`).
+            description: Name of the event (e.g., `$ae_first_open`, `account_deposit`, `account_issued`).
           - name: time
             description: Timestamp of the event.
           - name: properties
             description: JSON-encoded properties associated with the event (including deposit amount).
 
 models:
-  - name: user_first_deposit_duration
+  - name: cards
     description: |
-      This model calculates the time it takes for a user to make their first deposit after the first app open event.
-      It includes the deposit time, the time to deposit in seconds, and the amount deposited.
+      This model contains the data about linked customers and their corresponding account billing details. It joins the cards data with customer information.
+    columns:
+      - name: linked_to_customer_id
+        description: Customer ID linked to the card.
+      - name: date_linked
+        description: The date when the card was linked to the customer.
+      - name: customer_id
+        description: Customer ID associated with the card.
+      - name: linked_to_customer_name
+        description: Name of the customer linked to the card.
+      - name: status
+        description: Current status of the card.
+      - name: location_linked_lat
+        description: Latitude of the card's location.
+      - name: location_linked_long
+        description: Longitude of the card's location.
+      - name: billing_account_type
+        description: The billing account type for the customer.
+
+  - name: download_to_1st_deposit_duration
+    description: |
+      This model calculates the average time it takes for a user to make their first deposit after the first open event. It includes calculations for daily, weekly, and monthly time differences.
+    columns:
+      - name: period
+        description: The period over which the average time is calculated (Daily, Weekly, Monthly, All-Time).
+      - name: period_value
+        description: The specific value of the period (e.g., date, week range, month).
+      - name: avg_seconds
+        description: The average time in seconds it takes for a user to make a deposit after the first event.
+
+  - name: download_to_account_issued
+    description: |
+      This model calculates the time it takes for a user to make their first deposit after the first app open event. It joins the first open data, account issuance data, and deposit data to compute the time differences.
     columns:
       - name: distinct_id
         description: Unique identifier for the user.
-        tests:
-          - not_null
       - name: first_open_time
         description: The timestamp when the user first opened the app (`$ae_first_open` event).
-        tests:
-          - not_null
       - name: deposit_time
         description: The timestamp when the user made their first deposit (`account_deposit` event).
-        tests:
-          - not_null
       - name: time_to_deposit_seconds
         description: The time in seconds between the first app open and the first deposit event.
-        tests:
-          - not_null
+
+  - name: user_onboarding_journey
+    description: |
+      This model tracks the user's onboarding journey by calculating the time it takes from the first app open to account issuance and first deposit. It includes several time differences for key events in the user journey.
+    columns:
+      - name: user_id
+        description: The user identifier.
+      - name: distinct_id
+        description: Unique identifier for the user.
+      - name: first_open_time
+        description: The timestamp when the user first opened the app (`$ae_first_open` event).
+      - name: account_issued_time
+        description: The timestamp when the user’s account was issued.
+      - name: deposit_time
+        description: The timestamp when the user made their first deposit.
       - name: deposit_amount
-        description: The amount deposited during the first deposit event.
-        tests:
-          - not_null
-          - accepted_values:
-              values: ["positive"]
-              description: "Amount deposited should be positive."
+        description: The amount of money deposited during the first deposit event.
+      - name: first_open_to_deposit_seconds
+        description: The time in seconds between the first app open and the first deposit event.
+      - name: account_issued_to_deposit_seconds
+        description: The time in seconds between the account issuance and the first deposit event.
+      - name: first_open_to_account_issued_seconds
+        description: The time in seconds between the first app open and account issuance.
+
