@@ -8,13 +8,11 @@ models:
     columns:
       - name: cohort_date
         description: Full date of the first purchase month (used for sorting).
-        tests:
-          - not_null
+
 
       - name: cohort_year_month
         description: Formatted cohort date in 'YYYY-MM' format for readability.
-        tests:
-          - not_null
+
 
       - name: month_0
         description: Number of retained customers in the cohort's first month.

@@ -2,7 +2,7 @@
 version: 2
 
 models:
-  - name: customer_info
+  - name: customers_info
     description: >
       A unified table containing enriched customer data from multiple sources including Firestore exports,
       Mixpanel, and various subfields like address, billing, and account metadata.

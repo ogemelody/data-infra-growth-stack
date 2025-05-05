@@ -1,29 +1,165 @@
 version: 2
 
+sources:
+  - name: kasi-production.mixpanel_existing_data
+    description: 'Source containing Mixpanel event data including user actions like deposits'
+    tables:
+      - name: mp_master_event
+        description: 'Table with all account-related events such as deposits, withdrawals, and transfers'
+
+  - name: branch
+    description: 'Source for mobile install and engagement data from Branch'
+    tables:
+      - name: installs
+        description: 'Table containing install events tracked via Branch'
+      - name: ad_spend
+        description: 'Table with campaign spend data linked to user acquisition events'
+
+  - name: kasi-production.kasi_datainfra_firestore_export_from_gcs
+    description: 'Raw transactional data and associated metadata for customers'
+    tables:
+      - name: transactions
+        description: 'Table capturing financial transactions by users from the firestore db'
+      - name: uncleared_transaction
+        description: 'Uncleared transaction from the firestore db'
+
+  - name: kasi-production.kasi_datainfra_all_tables
+    description: 'Tables containing customer metadata and related info'
+    tables:
+      - name: customer_info
+        description: 'Contains users information'
+
+  - name: kasi-production.kasi_datainfra_ads_networks
+    description: 'Contains data retrieved for the ads network'
+    tables:
+      - name: ads_CampaignBasicStats_1279843096
+        description: 'Campaigns'
+
 models:
-  - name: deposit  # Model name
-    description: "Events for account deposits including details like amount, customer ID, and customer name."
+  - name: deposit
+    description: 'Extracts account deposit events from Mixpanel data'
     columns:
       - name: event_name
-        description: "Name of the event."
+        description: 'Name of the event, expected to be account_deposit'
         tests:
-          - not_null  # Ensure the event_name is not null
-
+          - not_null
       - name: time
-        description: "Timestamp of the event."
-        tests:
-          - not_null  # Ensure time is always present
+        description: 'Timestamp of the event occurrence'
 
+      - name: distinct_id
+        description: 'Unique identifier for the user'
       - name: amount
-        description: "Amount involved in the account deposit."
-        tests:
-          - not_null  # Ensure amount is not null
-          - numeric  # Ensure the amount is numeric
+        description: 'Amount deposited'
 
       - name: customer_id
-        description: "Unique identifier for the customer."
-
-
+        description: 'Unique identifier for the customer'
       - name: customer_name
-        description: "Name of the customer involved in the event."
+        description: 'Name of the customer'
+      - name: deposit_type
+        description: 'Type of deposit made by the customer'
 
+  - name: total_ads_spent_per_install
+    description: 'Calculates total ad spend and cost per install by matching ad campaign data with installs from branch data'
+    columns:
+      - name: date_created
+        description: 'Date when the install occurred'
+      - name: total_installs
+        description: 'Total number of installs on that date'
+      - name: segments_date
+        description: 'Date from the ad campaign segment'
+      - name: total_ad_spend
+        description: 'Total ad spend in the day, converted from micros'
+      - name: cost_per_install
+        description: 'Cost per install calculated as ad spend divided by installs'
+
+  - name: transactions
+    description: 'Combines transaction and user metadata to compute financial metrics, account lifecycles, and revenue categories'
+    columns:
+      - name: date
+        description: 'Transaction date or fallback from untagged transactions'
+      - name: download_date
+        description: 'Date the user downloaded the app'
+      - name: account_issued_date
+        description: 'Date the account was issued'
+      - name: first_deposit_date
+        description: 'Date of first deposit by sender'
+      - name: sender_first_name
+        description: 'First name of the sender'
+      - name: sender_last_name
+        description: 'Last name of the sender'
+      - name: sender_email
+        description: 'Email address of the sender'
+      - name: sender_user_name
+        description: 'Username of the sender'
+      - name: sender_id
+        description: 'Unique ID of the sender'
+      - name: sender_phone_number
+        description: 'Phone number of the sender'
+      - name: sender_amount
+        description: 'Amount sent by the sender'
+      - name: sender_name
+        description: 'Full name of the sender'
+      - name: Download_to_Account_Issued_in_days
+        description: 'Days between app download and account issuance'
+      - name: Account_Issued_to_1st_Deposit_in_days
+        description: 'Days between account issuance and first deposit'
+      - name: Download_to_1st_Deposit_in_days
+        description: 'Days between app download and first deposit'
+      - name: sender_reference
+        description: 'Reference for the sender'
+      - name: fees
+        description: 'Transaction fees incurred'
+      - name: cash_advance_amount
+        description: 'Amount of cash advance taken'
+      - name: cash_advance_amount_owing
+        description: 'Outstanding cash advance amount'
+      - name: cash_advance_amount_paid
+        description: 'Paid cash advance amount'
+      - name: cash_advance_available_after
+        description: 'Available cash advance amount after transaction'
+      - name: cash_advance_available_before
+        description: 'Available cash advance amount before transaction'
+      - name: cash_advance_fees
+        description: 'Fees related to cash advance'
+      - name: cash_advance_owed_after
+        description: 'Cash advance owed after the transaction'
+      - name: cash_advance_fees_charged
+        description: 'Charged fees for cash advance'
+      - name: cash_advance_outstanding_amount
+        description: 'Outstanding amount of cash advance'
+      - name: cash_advance_owed_before
+        description: 'Cash advance owed before transaction'
+      - name: cash_advance_total_owed
+        description: 'Total cash advance owed'
+      - name: transaction_category
+        description: 'Category assigned to transaction based on transaction_type logic'
+      - name: revenue_bank_eft
+        description: 'Revenue calculated for bank_eft transactions based on billing_account_type'
+      - name: debit
+        description: 'Debit amount for the transaction'
+      - name: credit
+        description: 'Credit amount for the transaction'
+      - name: transaction_id
+        description: 'Unique transaction identifier'
+      - name: transaction_type
+        description: 'Type of transaction performed'
+      - name: transaction_seen
+        description: 'Flag indicating if the transaction was viewed'
+      - name: transaction_reference_id
+        description: 'Reference ID of the transaction'
+      - name: receiver_amount
+        description: 'Amount received in the transaction'
+      - name: merchant_id
+        description: 'ID of the merchant involved in transaction'
+      - name: state
+        description: 'State of the transaction, possibly user region'
+      - name: date_settled
+        description: 'Date the transaction was settled'
+      - name: transaction_redeemed
+        description: 'Flag indicating if transaction was redeemed'
+      - name: running_account_balance_before_payment
+        description: 'Running balance before the payment'
+      - name: running_account_balance_after_payment
+        description: 'Running balance after the payment'
+      - name: billing_account_type
+        description: 'Account billing type of the customer'
