@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: customer_retention_cohort_analysis
+    description: >
+      Cohort analysis model that shows customer retention by months since their first purchase.
+      Calculates the number of retained customers per cohort and each month from their initial purchase.
+    columns:
+      - name: cohort_date
+        description: Full date of the first purchase month (used for sorting).
+        tests:
+          - not_null
+
+      - name: cohort_year_month
+        description: Formatted cohort date in 'YYYY-MM' format for readability.
+        tests:
+          - not_null
+
+      - name: month_0
+        description: Number of retained customers in the cohort's first month.
+      - name: month_1
+        description: Number of retained customers in the cohort's second month.
+      - name: month_2
+        description: Number of retained customers in the cohort's third month.
+      - name: month_3
+        description: Number of retained customers in the cohort's fourth month.
+      - name: month_4
+        description: Number of retained customers in the cohort's fifth month.
+      - name: month_5
+        description: Number of retained customers in the cohort's sixth month.
+      - name: month_6
+        description: Number of retained customers in the cohort's seventh month.
+      - name: month_7
+        description: Number of retained customers in the cohort's eighth month.
+      - name: month_8
+        description: Number of retained customers in the cohort's ninth month.
+      - name: month_9
+        description: Number of retained customers in the cohort's tenth month.
+      - name: month_10
+        description: Number of retained customers in the cohort's eleventh month.
+      - name: month_11
+        description: Number of retained customers in the cohort's twelfth month.
