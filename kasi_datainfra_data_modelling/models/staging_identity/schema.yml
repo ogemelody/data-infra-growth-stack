@@ -1,116 +1,226 @@
+
 version: 2
+
+models:
+  - name: customer_info
+    description: >
+      A unified table containing enriched customer data from multiple sources including Firestore exports,
+      Mixpanel, and various subfields like address, billing, and account metadata.
+    columns:
+      - name: customer_id
+        description: Unique identifier for the customer, resolved from various sources.
+      - name: date_issued
+        description: Date when the bank account was issued.
+      - name: created_at_datetime
+        description: Timestamp when the user was created.
+      - name: u_id
+        description: User ID.
+      - name: title
+        description: Customer title (e.g., Mr., Ms.).
+      - name: first_name
+        description: Customer's first name.
+      - name: last_name
+        description: Customer's last name.
+      - name: user_name
+        description: Username used by the customer.
+      - name: full_name_source_customer_collection
+        description: Full name derived by concatenating first and last names.
+      - name: email
+        description: Email address.
+      - name: gender
+        description: Gender of the user, converted to lowercase.
+      - name: date_of_birth_datetime
+        description: Date of birth timestamp.
+      - name: province
+        description: Province of the customer.
+      - name: line_one
+        description: Address line one.
+      - name: line_two
+        description: Address line two.
+      - name: city
+        description: City of residence.
+      - name: suburb
+        description: Suburb of residence.
+      - name: postal_code
+        description: Postal code.
+      - name: residential_status_code
+        description: Code representing the residential status.
+      - name: job_category
+        description: Job category of the user.
+      - name: account_number
+        description: Customer's bank account number.
+      - name: card_number
+        description: Customer's card number.
+      - name: card_status
+        description: Status of the customer's card.
+      - name: card_holder_id
+        description: ID associated with the card holder.
+      - name: account_status
+        description: Status of the customer's account.
+      - name: account_type
+        description: Type of the account.
+      - name: billing_account_type
+        description: Current billing account type.
+      - name: billing_previous_account_type
+        description: Previous billing account type.
+      - name: billing_updated_on
+        description: Timestamp of billing info update.
+      - name: last_change
+        description: Last change in account status.
+      - name: latest_update_date
+        description: Latest update timestamp.
+      - name: updated_by
+        description: User or process who last updated the account.
+      - name: profile_image_skipped
+        description: Boolean indicating if profile image upload was skipped.
+      - name: version
+        description: Version of the app used.
+      - name: platform
+        description: Platform of the app (iOS/Android).
+      - name: force_update
+        description: Indicates if a forced update was required.
+      - name: failed_submissions_data_by_country
+        description: Country from failed identity submissions.
+      - name: failed_submissions_data_id_passport_number
+        description: Passport or ID number from failed submission.
+      - name: passport_issue_date
+        description: Passport issue date from failed submission.
+      - name: passport_expiry_date
+        description: Passport expiry date from failed submission.
+      - name: identity_type
+        description: Type of identification provided.
+      - name: electricity_meter_number
+        description: Electricity meter number linked to customer.
+      - name: water_meter_number
+        description: Water meter number linked to customer.
+      - name: referral_code_used
+        description: Referral code used at registration.
+      - name: issued_account_viewed
+        description: Indicates if issued account was viewed.
+      - name: user_name_viewed
+        description: Indicates if username was viewed.
+      - name: status_level
+        description: Fraud risk status level.
+      - name: incident_reports
+        description: Number of incident reports filed.
+      - name: update_date
+        description: Last update date of fraud risk info.
+      - name: business_permissions
+        description: Permissions assigned to the user within business context.
+      - name: business_id
+        description: ID of the associated business.
+      - name: confirmation_letter_generation_date
+        description: When the confirmation letter was generated.
+      - name: bank_account_available_balance_float_value
+        description: Available float balance.
+      - name: bank_account_available_balance_integer_value
+        description: Available integer balance.
+      - name: provided
+        description: Whether the available balance was provided.
+      - name: card_id
+        description: ID associated with the card.
+      - name: deep_link_campaign_id
+        description: Deep link campaign ID.
+      - name: deep_link_source
+        description: Source of the deep link.
+      - name: deep_link_campaign
+        description: Campaign from which deep link originated.
+      - name: deep_link_click_http_referrer
+        description: HTTP referrer for the deep link click.
+      - name: deep_link_referral_code
+        description: Referral code from deep link.
+      - name: phone_number
+        description: Phone number of the user.
+      - name: sms_phone_number
+        description: Phone number used for SMS.
+      - name: declined_by
+        description: Person/system who declined the request.
+      - name: declined_by_id
+        description: ID of who declined the request.
+      - name: verification_decline_reason
+        description: Reason for verification decline.
+      - name: smile_identity_status
+        description: Status from Smile Identity verification.
+      - name: os
+        description: Operating system.
+      - name: approved_by
+        description: Approver's name.
+      - name: approved_by_id
+        description: Approver's ID.
+      - name: cash_advance_status
+        description: Status of the cash advance request.
+      - name: has_active_cash_advance
+        description: Boolean indicating if active cash advance exists.
+      - name: cash_advance_limit_cents
+        description: Limit of cash advance in cents.
+      - name: total_early_payments
+        description: Total number of early payments made.
+      - name: cash_advance_monthly_missed_payments
+        description: Monthly missed payments for cash advance.
+      - name: cash_advance_monthly_cash_advance_count
+        description: Count of monthly cash advance requests.
+      - name: permanently_hide_account_fee_display
+        description: Boolean flag to hide account fee.
+      - name: number_of_missed_subscription_payments
+        description: Count of missed subscription payments.
+      - name: missed_payment_date
+        description: Date of the missed payment.
+      - name: country
+        description: Country from citizenship details.
+      - name: code
+        description: Citizenship code.
+      - name: identity_citizenship_id_passport_number
+        description: Passport number from identity citizenship.
+      - name: residence_indicator
+        description: Residence status indicator.
+      - name: passport_issue_date_datetime
+        description: Issue date of passport.
+      - name: pargo_card_order_country_pickup_point
+        description: Pickup country for Pargo card.
+      - name: pargo_card_order_pickup_point_city
+        description: Pickup city for Pargo card.
+      - name: pargo_card_order_pickup_point_postal_code
+        description: Postal code of pickup point.
+      - name: pargo_card_order_pickup_point_address1
+        description: Address line 1 of pickup point.
+      - name: pargo_card_order_pickup_point_address2
+        description: Address line 2 of pickup point.
+      - name: tracking_code
+        description: Tracking code for card order.
+      - name: referring_customer
+        description: ID of the customer who made the referral.
+      - name: passport_expiry_date_string
+        description: Expiry date of passport (string format).
+      - name: visa_type
+        description: Type of visa.
+      - name: referral_code
+        description: Referral code.
+      - name: branch_username
+        description: Username from branch onboarding.
+      - name: branch_feature
+        description: Feature associated with the branch.
+      - name: branch_profession
+        description: Profession associated with branch onboarding.
+      - name: branch_channel
+        description: Channel from which onboarding happened.
+      - name: branch_fica_indicator
+        description: FICA verification indicator.
+      - name: branch_account_status
+        description: Account status from branch onboarding.
+      - name: branch_id_type
+        description: ID type from branch onboarding.
+      - name: branch_citizenship
+        description: Citizenship from branch onboarding.
+      - name: branch_campaign
+        description: Campaign from which onboarding was initiated.
+      - name: branch_deep_link_branch_gender
+        description: Gender captured from onboarding deep link.
 
 sources:
   - name: kasi_datainfra_firestore_export_from_gcs
     tables:
       - name: customers
       - name: cards
-
-  - name: mixpanel_existing_data_identity
+  - name: mixpanel_existing_data
     tables:
       - name: mp_master_event
-
-models:
-  - name: customer_info
-    description: "Staging table for customer identity data."
-    columns:
-      - name: full_name_source_customer_collection
-        description: "Concatenation of first and last name."
-        tests:
-          - not_null
-
-      - name: email
-        description: "Customer's email address."
-        tests:
-          - unique
-
-      - name: gender
-        description: "Gender of the customer."
-        tests:
-          - accepted_values:
-              values: ['male', 'female', 'other']
-
-      - name: created_at_datetime
-        description: "Timestamp of customer account creation."
-
-      - name: account_status
-        description: "Current status of the customer's account."
-
-      - name: business_id
-        description: "ID of the first associated business."
-
-      - name: bank_account_available_balance_float_value
-        description: "Float representation of the customer's bank account balance."
-
-      - name: linked_to_customer_id
-        description: "Customer ID associated with linked card."
-
-      - name: date_of_birth_datetime
-        description: "Date of birth of the customer."
-
-      - name: phone_number
-        description: "Customer's primary phone number."
-
-      - name: account_type
-        description: "Type of bank account the customer holds."
-
-      - name: referral_code
-        description: "Referral code used during customer registration."
-
-      - name: approved_by
-        description: "User who approved the customer account."
-
-      - name: cash_advance_status
-        description: "Status of the customer's cash advance."
-
-      - name: subscription_payments.number_of_missed_subscription_payments
-        description: "Number of missed subscription payments by the customer."
-
-      - name: identity_citizenship_id_passport_number
-        description: "Customer's passport or ID number."
-
-      - name: pargo_card_order_pickup_point_city
-        description: "City where the Pargo card order will be picked up."
-
-      - name: deep_link_campaign
-        description: "Campaign associated with the deep link."
-
-      - name: deep_link_referral_code
-        description: "Referral code embedded in the deep link."
-
-      - name: declined_by
-        description: "User who declined the customer's account."
-
-      - name: verification_decline_reason
-        description: "Reason why the customer verification was declined."
-
-      - name: os
-        description: "Operating system used during registration."
-
-      - name: platform
-        description: "Platform the customer used (iOS, Android, Web)."
-
-      - name: mixpanel_customer_id_source_mixpanel
-        description: "Customer ID from Mixpanel."
-
-      - name: mixpanel_customer_name_source_mixpanel
-        description: "Customer name from Mixpanel."
-
-  - name: stg_cards
-    description: "Staging table for card information linked to customers."
-    columns:
-      - name: linked_to_customer_name
-        description: "Name of the customer linked to the card."
-
-
-      - name: linked_to_customer_id
-        description: "Customer ID associated with the card."
-
-
-      - name: date_linked
-        description: "Timestamp of when the card was linked to the customer."
-
-      - name: status_from_cards
-        description: "Status of the card (active, expired, etc.)."
-
-
