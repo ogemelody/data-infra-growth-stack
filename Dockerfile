@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir dbt-core dbt-postgres dbt-bigquery
 COPY ./kasi_datainfra_data_modelling /usr/src/dbt/kasi_datainfra_data_modelling
 
 # Copy the profiles.yml to the dbt directory
-COPY ./profiles.yml /root/.dbt/profiles.yml
+COPY kasi_datainfra_data_modelling/profiles.yml /root/.dbt/profiles.yml
 
 # Set environment variables for dbt
 ENV DBT_PROFILES_DIR=/root/.dbt
