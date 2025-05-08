@@ -17,5 +17,5 @@ The data architecture captures event data from multiple sources (Firestore, Fire
 - **Python 3.x** must be installed.
 - **Dependencies**:
   ```sh
-  pip install twilio requests
+  pip install  dbt-bigquery google-api-core google-auth google-cloud-bigquery google-cloud-storage google-cloud-core
   ```
